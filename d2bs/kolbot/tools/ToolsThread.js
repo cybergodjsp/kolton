@@ -36,8 +36,12 @@ function main() {
 		cloneWalked = false,
 		canQuit = true,
 		timerLastDrink = [];
+		
+		   /*   DropStats mod - variable   */
+   var logDrop, logList = [], logFolder = 'logs/dropstats',
+      logFile = logFolder+'/'+me.charname+'.json'
 
-	print("ÿc3Start ToolsThread script");
+	print("?c3Start ToolsThread script");
 	D2Bot.init();
 	Config.init(false);
 	Pickit.init(false);
@@ -126,7 +130,7 @@ function main() {
 
 		for (i = 0; i < items.length; i += 1) {
 			if (type < 3 && items[i].mode === 0 && items[i].location === 3 && items[i].itemType === pottype) {
-				print("ÿc2Drinking potion from inventory.");
+				print("?c2Drinking potion from inventory.");
 
 				return copyUnit(items[i]);
 			}
@@ -149,7 +153,7 @@ function main() {
 			if (script) {
 				if (script.running) {
 					if (i === 0) { // default.dbj
-						print("ÿc1Pausing.");
+						print("?c1Pausing.");
 					}
 
 					// don't pause townchicken during clone walk
@@ -158,7 +162,7 @@ function main() {
 					}
 				} else {
 					if (i === 0) { // default.dbj
-						print("ÿc2Resuming.");
+						print("?c2Resuming.");
 					}
 
 					script.resume();
@@ -353,14 +357,14 @@ function main() {
 			break;
 		case 107: // Numpad +
 			showConsole();
-			print("ÿc4MF: ÿc0" + me.getStat(80) + " ÿc4GF: ÿc0" + me.getStat(79) + " ÿc1FR: ÿc0" + me.getStat(39) +
-				" ÿc3CR: ÿc0" + me.getStat(43) + " ÿc9LR: ÿc0" + me.getStat(41) + " ÿc2PR: ÿc0" + me.getStat(45));
+			print("?c4MF: ?c0" + me.getStat(80) + " ?c4GF: ?c0" + me.getStat(79) + " ?c1FR: ?c0" + me.getStat(39) +
+				" ?c3CR: ?c0" + me.getStat(43) + " ?c9LR: ?c0" + me.getStat(41) + " ?c2PR: ?c0" + me.getStat(45));
 
 			break;
 		case 101: // numpad 5
 			if (AutoMule.getInfo() && AutoMule.getInfo().hasOwnProperty("muleInfo")) {
 				if (AutoMule.getMuleItems().length > 0) {
-					print("ÿc2Mule triggered");
+					print("?c2Mule triggered");
 					scriptBroadcast("mule");
 					this.exit();
 				} else {
@@ -382,6 +386,9 @@ function main() {
 		case 110: // decimal point
 			say("/fps");
 
+			         /*   DropStats mod - log once   */
+         Misc.formatDropLog (logFile, logDrop)
+			
 			break;
 		case 105: // numpad 9 - get nearest preset unit id
 			print(this.getNearestPreset());
@@ -389,14 +396,7 @@ function main() {
 			break;
 		}
 	};
-	
-	this.gameUp = function(Xp) {
- 		while (!sendCopyData(null, Xp, 1337, JSON.stringify({gm: me.gamename, pw: me.gamepassword, profile: me.profile}))) {
-			D2Bot.start(Xp);
-			delay(3000);
-		}
- 	};
-	
+
 	this.gameEvent = function (mode, param1, param2, name1, name2) {
 		switch (mode) {
 		case 0x00: // "%Name1(%Name2) dropped due to time out."
@@ -442,8 +442,6 @@ function main() {
 
 			break;
 		case 0x12: // "Diablo Walks the Earth"
-		this.gameUp("killer");
-		say("/w *cyberzon2 !dclone " + me.gamename + "// " + me.gamepassword);
 			if (Config.DCloneQuit > 0) {
 				D2Bot.printToConsole("Diablo walked in game. Leaving.");
 
@@ -460,7 +458,7 @@ function main() {
 				this.togglePause();
 				Town.goToTown();
 				showConsole();
-				print("ÿc4Diablo Walks the Earth");
+				print("?c4Diablo Walks the Earth");
 
 				me.maxgametime = 0;
 
@@ -507,8 +505,44 @@ function main() {
 
 			break;
 		}
+
 	};
 
+			   /*   DropStats mod - item storage - Rev26/07/15   */
+   this.onItemDrop = function (gid, mode, code, global, lblMf, dropLoc, drop_ilvl, dropQuality, dropName) {
+      /*   Origine filter   */
+      if (mode)      return
+
+      var itemDrop = getUnit(4,-1,-1,gid)
+
+      /*   UnIdentified filter   */
+      if (!itemDrop || itemDrop.getFlag(0x10))      return
+
+      /*   Quality filter   */
+      if (Config.DropStats.Quality.indexOf(itemDrop.quality) < 0)      return
+
+      /*   Old one filter   */
+      dropLoc = itemDrop.area+''+itemDrop.y+''+itemDrop.x
+
+      if (logList.indexOf(dropLoc) >= 0)      return
+      logList.push(dropLoc)
+
+      /*   Add new input to the storage object - obj   */
+      lblMf = me.getStat(80)
+      drop_ilvl = itemDrop.ilvl
+      dropQuality = itemDrop.quality
+      dropName = itemDrop.name + (itemDrop.getFlag(0x400000) ? ' (eth)' : '')
+
+      if (!logDrop.hasOwnProperty(lblMf))             {   logDrop[lblMf] = {};   logDrop[lblMf]['Total Runs'] = 0   }
+      if (!logDrop[lblMf][drop_ilvl])                     logDrop[lblMf][drop_ilvl] = {}
+      if (!logDrop[lblMf][drop_ilvl][dropQuality])         logDrop[lblMf][drop_ilvl][dropQuality] = {}
+      if (!logDrop[lblMf][drop_ilvl][dropQuality][dropName])   logDrop[lblMf][drop_ilvl][dropQuality][dropName] = 0
+
+      logDrop[lblMf][drop_ilvl][dropQuality][dropName] += 1
+   }
+		
+	
+	
 	// Cache variables to prevent a bug where d2bs loses the reference to Config object
 	Config = Misc.copy(Config);
 	tick = getTickCount();
@@ -516,8 +550,36 @@ function main() {
 	addEventListener("keyup", this.keyEvent);
 	addEventListener("gameevent", this.gameEvent);
 	addEventListener("scriptmsg", this.scriptEvent);
-	//addEventListener("gamepacket", Events.gamePacket);
+	addEventListener("gamepacket", Events.gamePacket);
 
+	   /*   DropStats mod - start   */
+   if (Config.DropStats.Enable) {
+      if ( !FileTools.exists(logFile) ) {
+         /* No previous statistics   */
+         logDrop = {}
+         addEventListener('itemaction', onItemDrop)
+
+         /*   Create storage folder on req.   */
+         if (dopen('').getFolders().indexOf(logFolder) < 0 ) {
+            if (dopen('').create(logFolder))
+               D2Bot.printToConsole('Toolsthread.js create the folder '+logFolder, 5)
+            else
+               D2Bot.printToConsole('Toolsthread.js failed creating the folder '+logFolder, 9)
+         }
+
+      }
+
+      else {
+         try {
+            /*   Get the previous statistics   */
+            logDrop = JSON.parse(   FileTools.readText(logFile)   )
+            addEventListener('itemaction', onItemDrop)
+         } 
+         catch (err) {   D2Bot.printToConsole("failed to load the statistics from ''"+logFile+"'' in game "+me.gamename, 9)   }
+      }
+
+   }
+	
 	// Load Fastmod
 	Packet.changeStat(105, Config.FCR);
 	Packet.changeStat(99, Config.FHR);
@@ -624,13 +686,26 @@ function main() {
 		}
 
 		if (quitFlag && canQuit) {
-			print("ÿc8Run duration ÿc2" + ((getTickCount() - me.gamestarttime) / 1000));
+			print("?c8Run duration ?c2" + ((getTickCount() - me.gamestarttime) / 1000));
 
 			if (Config.LogExperience) {
 				Experience.log();
 			}
 
 			this.checkPing(false); // In case of quitlist triggering first
+				         /*   DropStats mod - end   */
+         if (Config.DropStats.Enable && logDrop) {
+            removeEventListener('itemaction', onItemDrop)
+            /*   Increment Mf run - int */
+            logDrop[me.getStat(80)]['Total Runs'] += 1
+            /*   Save data to hard drive   */
+            try {
+               FileTools.writeText(logFile, JSON.stringify(logDrop))
+
+               if (Config.DropStats.AutoLog)      Misc.formatDropLog (logFile, logDrop)
+            }
+            catch (err) {   D2Bot.printToConsole('failed to log the drop statistics', 9)   }
+         }
 			this.exit();
 
 			break;
