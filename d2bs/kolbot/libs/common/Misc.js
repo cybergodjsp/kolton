@@ -1565,6 +1565,8 @@ var Misc = {
 		return true;
 	},
 
+	
+	
 	// Go to town when low on hp/mp or when out of potions. can be upgraded to check for curses etc.
 	townCheck: function () {
 		var i, potion, check,
@@ -1893,6 +1895,7 @@ MainLoop:
 	},
 
 	copy: function (from) {
+	
 		var i,
 			obj = {};
 
@@ -1903,7 +1906,48 @@ MainLoop:
 		}
 
 		return obj;
-	}
+	}   /*   DropStats mod - ouput format - Rev25/07/15   */
+   ,formatDropLog: function (logFile, logDrop) {
+
+      var sTab = '', bTabOut = false, sDropStats = JSON.stringify(logDrop)
+
+      /*   Mark out property from value   */
+      sDropStats = sDropStats.replace(/,/g, function (match, offset) {
+         
+         if (sDropStats[offset-1] === '}')   return '@';      return match
+
+      }).replace(/@/g, '}{')
+
+      /*   Add tabulation when required   */
+      sDropStats = sDropStats.replace(/{|}|,/g, function (match) {
+
+         if (match === ',')      return '\n' + sTab
+
+         if (match === '{') {
+            if (bTabOut)      sTab += '\t'
+
+            bTabOut = true
+
+            return '\n\n' + sTab + (sTab.length === 3 ? '' : match)
+         }
+
+         if (match === '}') {
+            if (!bTabOut)      sTab = sTab.slice(0, -1)
+
+            bTabOut = false
+
+            return sTab.length === 3 ? '' : '\n\n' + sTab + match
+         }
+
+         return null
+      })
+
+      sDropStats = '\t\t\t/**\t'+me.charname+' drop info ('+new Date(Date.now())+')\t*/'+sDropStats
+
+      if (FileTools.writeText(logFile.slice(0, -2), sDropStats))
+         print('ÿc9'+' ~ '+logFile.slice(0, -2)+' updated ~')
+   
+   }
 };
 
 var Sort = {
@@ -1997,49 +2041,16 @@ var Experience = {
 			getGameTime = this.getGameTime(),
 			timeToLevel = this.timeToLevel();
 
-		string = "[Game: " + me.gamename + (me.gamepassword ? "//" + me.gamepassword : "") + getGameTime + "] [Level: " + me.getStat(12) + " (" + progress + "%)] [XP: " + gain + "] [Games ETA: " + runsToLevel + "] [Time ETA: " + timeToLevel + "]";
-		//string = "[Game: " + me.gamename + (me.gamepassword ? "//" + me.gamepassword : "") + getGameTime + "] [Level: " + me.getStat(12) + " (" + progress + "%)] [XP: " + gain + "] [Games ETA: " + runsToLevel + "]";
-	if (FileTools.exists("games/" + me.profile + ".xml")) {
-			var games = FileTools.readText("games/" + me.profile + ".xml");  //file with game names and pw
-			games = games.split("</charlevel>");
-			print("removing: " + games.shift() + " from list");				//remove game from list
-			games = games.join("</charlevel>");	//write gamelist back to file with removed first game
-			FileTools.writeText("games/" + me.profile + ".xml");
-		}
-		Misc.fileAction("games/" + me.profile + ".xml", 2, 
-	"<charlevel>"
-	+ "<gamename>"
-	+  me.gamename
-	+ "</gamename>"
-	+ "<gamepass>"
-	+ me.gamepassword 
-	+ "</gamepass>"
-	+ "<gametime>"
-	+ getGameTime
-	+ "</gametime>"
-	+ "<account>"
-	+ me.account 
-	+ "</account>"
-	+ "<name>"
-	+ me.name
-	+ "</name>"
-	+ "<level>"
-	+ me.getStat(12)
-	+ "</level>"
-	+ "<xpgain>"
-	+ this.totalExp[me.getStat(12)]
-	+ "</xpgain>"
-	+ "<xptotal>"
-	+ progress
-	+ "</xptotal>"
-	+ "<games>"
-	+ runsToLevel
-	+ "</games>"
-	+ "<time>"
-	+ new Date()
-	+ "</time>"
-	+ "</charlevel>");
+		//string = "[Game: " + me.gamename + (me.gamepassword ? "//" + me.gamepassword : "") + getGameTime + "] [Level: " + me.getStat(12) + " (" + progress + "%)] [XP: " + gain + "] [Games ETA: " + runsToLevel + "] [Time ETA: " + timeToLevel + "]";
+		string = "[Game: " + me.gamename + (me.gamepassword ? "//" + me.gamepassword : "") + getGameTime + "] [Level: " + me.getStat(12) + " (" + progress + "%)] [XP: " + gain + "] [Games ETA: " + runsToLevel + "]";
 
+		if (gain) {
+			D2Bot.printToConsole(string, 4);
+
+			if (me.getStat(12) > DataFile.getStats().level) {
+				D2Bot.printToConsole("Congrats! You gained a level. Current level:" + me.getStat(12), 5);
+			}
+		}
 	}
 };
 
@@ -2439,4 +2450,3 @@ var Events = {
 		return false;
 	}
 };
-
