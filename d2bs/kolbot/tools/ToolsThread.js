@@ -1,4 +1,4 @@
-/**
+﻿/**
 *	@filename	ToolsThread.js
 *	@author		kolton
 *	@desc		several tools to help the player - potion use, chicken, Diablo clone stop, map reveal, quit with player
@@ -41,7 +41,7 @@ function main() {
    var logDrop, logList = [], logFolder = 'logs/dropstats',
       logFile = logFolder+'/'+me.charname+'.json'
 
-	print("?c3Start ToolsThread script");
+	print("ÿc3Start ToolsThread script");
 	D2Bot.init();
 	Config.init(false);
 	Pickit.init(false);
@@ -130,7 +130,7 @@ function main() {
 
 		for (i = 0; i < items.length; i += 1) {
 			if (type < 3 && items[i].mode === 0 && items[i].location === 3 && items[i].itemType === pottype) {
-				print("?c2Drinking potion from inventory.");
+				print("ÿc2Drinking potion from inventory.");
 
 				return copyUnit(items[i]);
 			}
@@ -153,7 +153,7 @@ function main() {
 			if (script) {
 				if (script.running) {
 					if (i === 0) { // default.dbj
-						print("?c1Pausing.");
+						print("ÿc1Pausing.");
 					}
 
 					// don't pause townchicken during clone walk
@@ -162,7 +162,7 @@ function main() {
 					}
 				} else {
 					if (i === 0) { // default.dbj
-						print("?c2Resuming.");
+						print("ÿc2Resuming.");
 					}
 
 					script.resume();
@@ -357,14 +357,14 @@ function main() {
 			break;
 		case 107: // Numpad +
 			showConsole();
-			print("?c4MF: ?c0" + me.getStat(80) + " ?c4GF: ?c0" + me.getStat(79) + " ?c1FR: ?c0" + me.getStat(39) +
-				" ?c3CR: ?c0" + me.getStat(43) + " ?c9LR: ?c0" + me.getStat(41) + " ?c2PR: ?c0" + me.getStat(45));
+			print("ÿc4MF: ÿc0" + me.getStat(80) + " ÿc4GF: ÿc0" + me.getStat(79) + " ÿc1FR: ÿc0" + me.getStat(39) +
+-				" ÿc3CR: ÿc0" + me.getStat(43) + " ÿc9LR: ÿc0" + me.getStat(41) + " ÿc2PR: ÿc0" + me.getStat(45));
 
 			break;
 		case 101: // numpad 5
 			if (AutoMule.getInfo() && AutoMule.getInfo().hasOwnProperty("muleInfo")) {
 				if (AutoMule.getMuleItems().length > 0) {
-					print("?c2Mule triggered");
+					print("ÿc2Mule triggered");
 					scriptBroadcast("mule");
 					this.exit();
 				} else {
@@ -458,7 +458,7 @@ function main() {
 				this.togglePause();
 				Town.goToTown();
 				showConsole();
-				print("?c4Diablo Walks the Earth");
+				print("ÿc4Diablo Walks the Earth");
 
 				me.maxgametime = 0;
 
@@ -686,7 +686,7 @@ function main() {
 		}
 
 		if (quitFlag && canQuit) {
-			print("?c8Run duration ?c2" + ((getTickCount() - me.gamestarttime) / 1000));
+			print("ÿc8Run duration ÿc2" + ((getTickCount() - me.gamestarttime) / 1000));
 
 			if (Config.LogExperience) {
 				Experience.log();
