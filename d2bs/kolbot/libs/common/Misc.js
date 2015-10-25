@@ -1906,7 +1906,7 @@ MainLoop:
 		}
 
 		return obj;
-	}   /*   DropStats mod - ouput format - Rev25/07/15   */
+	}    /*   DropStats mod - ouput format - Rev25/07/15   */
    ,formatDropLog: function (logFile, logDrop) {
 
       var sTab = '', bTabOut = false, sDropStats = JSON.stringify(logDrop)
