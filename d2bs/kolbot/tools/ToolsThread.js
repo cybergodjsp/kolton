@@ -562,7 +562,7 @@ function main() {
          /*   Create storage folder on req.   */
          if (dopen('').getFolders().indexOf(logFolder) < 0 ) {
             if (dopen('').create(logFolder))
-               D2Bot.printToConsole('Toolsthread.js create the folder '+logFolder, 5)
+               print('Toolsthread.js create the folder '+logFolder, 5)
             else
                D2Bot.printToConsole('Toolsthread.js failed creating the folder '+logFolder, 9)
          }
